@@ -1,0 +1,54 @@
+Assignment Importment points
+
+Model.m
+
+    self.items = [HomePageSubModel getDataArray:[data valueForKey:@"items"] ]; // call submodel to set data with array
+//"+" took because will not have to allocate can access directly
++(NSArray *) getDataArray: (NSArray *) data
+
+
+        HomePageModel * model = [[HomePageModel alloc] initWithData:dict]; //added every data to model
+
+// - Load image from URL
+//Using GCD : If you don't want to hang your application then you can download your image in background.
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{        
+        NSString *imgURL = self.subModel.imgUrl;
+        NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:imgURL]];
+        //set your image on main thread.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.imgView.image =  [UIImage imageWithData:data];
+        });
+    });
+
+
+// -App Transport Security Settings
+For laod "http", because now iOS only load "htpps"
+
+
+// If using protocol in cell and implementing the method in tableview so will have to set 
+	myCell.delegate = self 
+	in cellforrowatindexpath, when that row is initilized
+
+//For call my initial view controller in Navigation View controller in App delegate
+HomeVC * home = [[HomeVC alloc] init];
+UINavigationController * nc = [[UINavigationController alloc] initWithRootViewController:home];
+self.window.rootViewController = nc;
+[self.window makeKeyAndVisible];
+
+
+// API call
+ self.location  = @"2172797&APPID=25b733dc88e97fd111c34250afbeac1c";
+    NSString *urlString = [NSString stringWithFormat:@"http://api.openweathermap.org/data/2.5/weather?id=%@", self.location];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
+    
+    //This is depricated so us NSURLSession
+    NSData *data = [NSURLConnection sendSynchronousRequest:urlRequest
+                                         returningResponse:nil
+                                                     error:nil];    
+    if (data != nil) {
+        NSDictionary *weatherDict = [NSJSONSerialization JSONObjectWithData:data
+                                                                    options:NSJSONReadingMutableContainers
+                                                                      error:nil];
+       NSLog(@"%@", [weatherDict description]);
+    }

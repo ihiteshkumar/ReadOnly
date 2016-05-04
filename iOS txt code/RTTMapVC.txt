@@ -1,0 +1,290 @@
+
+#import "SDRTTMapVC.h"
+#import "SDOTSOrderModel.h"
+#import <MapKit/MapKit.h>
+#import "SDCustomAnnotation.h"
+#import "SDConstants.h"
+#define ToRadian(x) ((x) * M_PI/180)
+#define ToDegrees(x) ((x) * 180/M_PI)
+
+@interface SDRTTMapVC ()<MKMapViewDelegate, MKAnnotation>{
+    bool isShowingDottedLine;
+    MKGeodesicPolyline *geodesicPolylineDotted;
+    MKGeodesicPolyline *geodesicPolylineSolid;
+    MKCircle *circle;
+    NSMutableArray *polyLinesArray;
+    NSMutableArray *circleArray;
+    CLLocation *firstLocation;
+    CLLocation *lastLocation;
+}
+
+@property (nonatomic, retain) NSArray *myAnnotations;
+//@property (nonatomic, strong) NSMutableArray *pointsArray;
+
+@end
+
+@implementation SDRTTMapVC
+@synthesize coordinate;
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.title = @"Track Order";
+    //nav Bar
+    [self enableBackButton];
+    
+    self.mapViewOtl.delegate = self;
+//    [self configureUIForCurrentIndex:self.currentIndex];
+    
+    polyLinesArray = [[NSMutableArray alloc] init];
+    circleArray = [[NSMutableArray alloc] init];
+    
+//    Check check
+    CLLocation *Location1 = [[CLLocation alloc] initWithLatitude:9.58 longitude:76.17]; //Kochi
+    CLLocation *Location2 = [[CLLocation alloc] initWithLatitude:13.04 longitude:80.16]; //Chennai
+//    CLLocation *Location3 = [[CLLocation alloc] initWithLatitude:18.97 longitude:72.83]; // Mumbai
+//    CLLocation *Location4 = [[CLLocation alloc] initWithLatitude:28.38 longitude:77.12]; //Delhi
+//    self.pointsArray = [[NSMutableArray alloc] init];
+//    [self.pointsArray addObject:Location1];
+//    [self.pointsArray addObject:Location2];
+//    [self.pointsArray addObject:Location3];
+//    [self.pointsArray addObject:Location4];
+//    key_Longitude
+//    NSString *latitude_a;
+//    NSString *longitud_a;
+//    latitude_a = [self.modelArray.firstObject valueForKey:key_Latitude];
+//    longitud_a = [self.modelArray.firstObject valueForKey:key_Longitude];
+//    double lat;
+//    lat = [latitude_a doubleValue];
+//    double lon;
+//    lon = [longitud_a doubleValue];
+    firstLocation = [[CLLocation alloc] initWithLatitude:[[self.modelArray.firstObject valueForKey:key_Latitude] doubleValue] longitude:[[self.modelArray.firstObject valueForKey:key_Longitude] doubleValue] ];
+    
+//    CLLocation *lastLocation = self.modelArray.lastObject;
+//    latitude_a = [self.modelArray.lastObject valueForKey:key_Latitude];
+//    longitud_a = [self.modelArray.lastObject valueForKey:key_Longitude];
+//    lat = [latitude_a doubleValue];
+//    lon = [longitud_a doubleValue];
+    lastLocation = [[CLLocation alloc] initWithLatitude:[[self.modelArray.lastObject valueForKey:key_Latitude] doubleValue]  longitude:[[self.modelArray.lastObject valueForKey:key_Longitude] doubleValue]];
+    
+    CLLocationCoordinate2D midPoint = [self midpointBetweenCoordinate:firstLocation andDestination:lastLocation];
+    CLLocationDistance distance = [firstLocation distanceFromLocation:lastLocation];
+    MKCoordinateRegion mapRegion = MKCoordinateRegionMakeWithDistance (midPoint,  distance, distance);
+    [self.mapViewOtl setRegion:mapRegion animated:YES];
+    
+
+//    [self configureMapForCurrentIndex:2];
+    [self configureUIForCurrentIndex:0];
+    
+}
+-(void)configureUIForCurrentIndex:(int)index{
+    
+    [self.leftBottomBtn setEnabled:YES];
+    [self.rightBottomBtn setEnabled:YES];
+    
+    if(self.modelArray.count == 2){
+        //close both right and left button;
+        [self.leftBottomBtn setEnabled:NO];
+        [self.rightBottomBtn setEnabled:NO];
+    }
+    else{
+        if(index == 0){
+            //close left Btn
+            [self.leftBottomBtn setEnabled:NO];
+        }
+        if(index == self.modelArray.count-2){
+//        if(index == self.pointsArray.count-2){ //mudda
+            //close right Btn
+            [self.rightBottomBtn setEnabled:NO];
+        }
+    }
+    self.currentIndex = index;
+    [self configureCardForCurrentIndex:index];
+    [self configureMapForCurrentIndex:index];
+}
+
+-(void)configureCardForCurrentIndex:(int)index{
+    //Update Label for current index;
+}
+
+-(void)configureMapForCurrentIndex:(int)index{
+    
+    [self.mapViewOtl removeOverlay:geodesicPolylineDotted];
+    [self.mapViewOtl removeOverlays:polyLinesArray];
+    [polyLinesArray removeAllObjects];
+    [self.mapViewOtl removeOverlays:circleArray];
+
+    firstLocation = [[CLLocation alloc] initWithLatitude:[[self.modelArray.firstObject valueForKey:key_Latitude] doubleValue] longitude:[[self.modelArray.firstObject valueForKey:key_Longitude] doubleValue] ];
+    lastLocation = [[CLLocation alloc] initWithLatitude:[[self.modelArray.lastObject valueForKey:key_Latitude] doubleValue]  longitude:[[self.modelArray.lastObject valueForKey:key_Longitude] doubleValue]];
+    
+    [self addAnnotation:firstLocation andDestination:lastLocation]; // mudda
+
+    
+    //Make map between Current index and Current index - 1;
+    if(index == 0){
+        //Make Annotation for source and destination;
+        return;
+    }
+    else{
+        //Make dotted line between current index and current index -1;
+//        [self addDottedLine:[self.modelArray objectAtIndex:index] andDestination:[self.modelArray lastObject]];
+        //and
+        
+//        for(int i = self.currentIndex-1;i >= 0;i--){
+        int i = index;
+        for(; i > 0 ; i--){
+            //Make solid line between i and i-1;
+            firstLocation = [[CLLocation alloc] initWithLatitude:[[[self.modelArray objectAtIndex:i] valueForKey:key_Latitude] doubleValue] longitude:[[[self.modelArray objectAtIndex:i] valueForKey:key_Longitude] doubleValue] ];
+            lastLocation = [[CLLocation alloc] initWithLatitude:[[[self.modelArray objectAtIndex:i-1] valueForKey:key_Latitude] doubleValue]  longitude:[[[self.modelArray objectAtIndex:i-1] valueForKey:key_Longitude] doubleValue]];
+
+//            [self addSolidLine:[self.modelArray objectAtIndex:i] andDestination:[self.modelArray objectAtIndex:i-1]];
+            [self addSolidLine:[self.modelArray objectAtIndex:i] andDestination:[self.modelArray objectAtIndex:i-1]];
+
+            [self addCircle:[self.modelArray objectAtIndex:i]];
+        }
+    }
+}
+
+-(void)setUpCurrentIndex:(SDOTSLocationInfoModel *)model{
+    if(model){
+        //Hitesh
+    }
+}
+
+-(void)setUpBottomArrows{
+    }
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)LoadLeftMapView:(id)sender {
+    if(self.currentIndex == 0){
+        return ;
+    }
+    else{
+        [self configureUIForCurrentIndex:self.currentIndex -1];
+    }
+}
+
+- (IBAction)LoadRightMapView:(id)sender {
+    if(self.currentIndex == self.modelArray.count - 1){
+        return ;
+    }
+    else{
+        [self configureUIForCurrentIndex:self.currentIndex + 1];
+    }
+}
+-(CLLocationCoordinate2D)midpointBetweenCoordinate:(CLLocation *)source andDestination:(CLLocation*)destination
+{
+    CLLocationCoordinate2D c1 = [source coordinate];
+    CLLocationCoordinate2D c2 = [destination coordinate];
+    c1.latitude = ToRadian(c1.latitude);
+    c2.latitude = ToRadian(c2.latitude);
+    CLLocationDegrees dLon = ToRadian(c2.longitude - c1.longitude);
+    CLLocationDegrees bx = cos(c2.latitude) * cos(dLon);
+    CLLocationDegrees by = cos(c2.latitude) * sin(dLon);
+    CLLocationDegrees latitude = atan2(sin(c1.latitude) + sin(c2.latitude), sqrt((cos(c1.latitude) + bx) * (cos(c1.latitude) + bx) + by*by));
+    CLLocationDegrees longitude = ToRadian(c1.longitude) + atan2(by, cos(c1.latitude) + bx);
+    
+    CLLocationCoordinate2D midpointCoordinate;
+    midpointCoordinate.longitude = ToDegrees(longitude);
+    midpointCoordinate.latitude = ToDegrees(latitude);
+    
+    return midpointCoordinate;
+}
+-(void) addAnnotation:(CLLocation *)source andDestination:(CLLocation*)destination
+{
+    SDCustomAnnotation *commuterLotAnnotation=[[SDCustomAnnotation alloc] initWithCoordinate:[source coordinate]];
+    SDCustomAnnotation *overflowLotAnnotation=[[SDCustomAnnotation alloc] initWithCoordinate:[destination coordinate]];
+    self.myAnnotations=[NSArray arrayWithObjects:commuterLotAnnotation, overflowLotAnnotation, nil];
+    [self.mapViewOtl addAnnotations:self.myAnnotations];
+}
+-(void) addCircle:(CLLocation *)source
+{
+    circle = [MKCircle circleWithCenterCoordinate:source.coordinate radius:10000];
+    [circleArray addObject: circle];
+    [self.mapViewOtl addOverlay:circle];
+}
+
+-(void)addSolidLine:(CLLocation *)source andDestination:(CLLocation*)destination
+{
+    //    CLLocationCoordinate2D coord = [source coordinate];
+    //    [self.mapViewOtl setRegion:MKCoordinateRegionMake(coord, MKCoordinateSpanMake(20, 20))];
+    
+    CLLocationCoordinate2D coordinates[2] = {source.coordinate, destination.coordinate};
+    geodesicPolylineSolid = [MKGeodesicPolyline polylineWithCoordinates:coordinates count:2];
+    [polyLinesArray addObject:geodesicPolylineSolid];
+    [self.mapViewOtl addOverlay:geodesicPolylineSolid];
+}
+-(void)addDottedLine:(CLLocation *)source andDestination:(CLLocation*)destination
+{
+    isShowingDottedLine = true;
+    //    CLLocationCoordinate2D coord = [source coordinate];
+    //    [self.mapViewOtl setRegion:MKCoordinateRegionMake(coord, MKCoordinateSpanMake(20, 20))];
+    
+    CLLocationCoordinate2D coordinates[2] = {source.coordinate, destination.coordinate};
+    geodesicPolylineDotted = [MKGeodesicPolyline polylineWithCoordinates:&coordinates[0] count:2];
+    [self.mapViewOtl addOverlay:geodesicPolylineDotted];
+}
+
+- (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(id <MKOverlay>)overlay
+{
+    if ([overlay isKindOfClass:[MKCircle class]]) {
+        
+        MKCircleRenderer *circleView = [[MKCircleRenderer alloc] initWithOverlay:overlay];
+        circleView.lineWidth = 1;
+        circleView.strokeColor = [UIColor greenColor];
+        circleView.fillColor = [UIColor whiteColor]; // colorWithAlphaComponent:0.4
+        return circleView;
+    }
+    
+    if (![overlay isKindOfClass:[MKPolyline class]]) {
+        return nil;
+    }
+    
+    if(isShowingDottedLine){
+        MKPolylineRenderer *renderer = [[MKPolylineRenderer alloc] initWithPolyline:(MKPolyline *)overlay];
+        renderer.lineDashPattern = @[@2, @5];
+        renderer.lineWidth = 1.5f;
+        renderer.strokeColor = [UIColor redColor];
+        renderer.alpha = 50;
+        isShowingDottedLine = false;
+        return renderer;
+    } else {
+        MKPolylineRenderer *renderer = [[MKPolylineRenderer alloc] initWithPolyline:(MKPolyline *)overlay];
+        renderer.lineWidth = 1.5f;
+        renderer.strokeColor = [UIColor greenColor];
+        renderer.alpha = 50;
+        return renderer;
+    }
+}
+-(MKAnnotationView *)mapView:(MKMapView *)mapView viewForAnnotation:(id)annotation
+{
+    if([annotation isKindOfClass:[SDCustomAnnotation class]]){
+        static NSString* AnnotationIdentifier = nil;//@"AnnotationIdentifier";
+        //Try to get an unused annotation, similar to uitableviewcells
+        MKAnnotationView *annotationView=[mapView dequeueReusableAnnotationViewWithIdentifier:AnnotationIdentifier];
+        //If one isn’t available, create a new one
+        if(!annotationView){
+            annotationView=[[MKAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:AnnotationIdentifier];
+            //Here’s where the magic happens
+            annotationView.image=[UIImage imageNamed:@"eyes_tap@2x.png"];
+        }
+        return annotationView;
+    }
+    return nil;
+}
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

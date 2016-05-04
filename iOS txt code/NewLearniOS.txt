@@ -1,0 +1,39 @@
+//Load iamge from URl
+        cell.self.imgView.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:self.homePageSubModel.imgUrl]]];
+
+
+    //Using GCD : If you don't want to hang your application then you can download your image in background.
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//            NSString *imgURL = @"https://www.pngimg.com/upload/iphone_PNG5740.png";
+            NSString *imgURL = self.homePageSubModel.imgUrl;
+            NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:imgURL]];
+            
+            //set your image on main thread.
+            dispatch_async(dispatch_get_main_queue(), ^{
+                cell.self.imgView.image =  [UIImage imageWithData:data];
+            });
+        });
+
+
+
+//Dynamic Label Size - boundRectWithSize, this is only in nsattributedstring
++(CGFloat) getHeightForLabel:(CGFloat )width withString:(NSString *)text {
+    
+    if (!text) return 0;
+    
+    CGSize constraintSize = CGSizeMake(width, 9999);
+
+    NSDictionary *attributesDictionary = [NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:12.0], NSFontAttributeName, nil];
+    NSMutableAttributedString *myString = [[NSMutableAttributedString alloc] initWithString:text attributes:attributesDictionary];
+    CGRect requiredHeight = [myString boundingRectWithSize:constraintSize options:NSStringDrawingUsesLineFragmentOrigin context:nil];
+    
+//    if (requiredHeight.size.width > width) {
+//        requiredHeight = CGRectMake(0, 0, width, requiredHeight.size.height);
+//    }
+    return requiredHeight.size.height;
+}
+
+//Add tap gesture on Imageview or label on cell or anything so did select sell won't call, selector of this will call
+    UITapGestureRecognizer *imageTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(didTappedForProfile)];
+    imageTap.numberOfTapsRequired = 1;
+    [self.userImg addGestureRecognizer:imageTap];

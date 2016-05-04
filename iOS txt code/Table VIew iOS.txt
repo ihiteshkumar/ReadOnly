@@ -1,0 +1,63 @@
+//Call my controller as first responser in New APP
+
+- (BOOL)application:(UIApplication *)application
+  didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.rootViewController = [[TTWaitController alloc] init];
+    [self.window makeKeyAndVisible];
+    return YES;
+}
+
+//Table View
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.subOrdersTotalArray  = [[NSMutableArray alloc] init];
+    
+    self.title = @"Select Order";
+    [self addCloseButton];
+
+    // For calling the cell from the nib
+    [self.selectOrderTableView registerNib:[UINib nibWithNibName:@"SDSelectOrderCell" bundle:[NSBundle mainBundle]] forCellReuseIdentifier:@"MDSelectOrderCell"];
+    
+    self.sectionArray = [[NSMutableArray alloc] init];
+    //add deligate fucntions in inteface also
+
+    self.selectOrderTableView.delegate = self;
+    self.selectOrderTableView.dataSource = self;
+
+    self.selectOrderTableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+    
+    
+    [[MDAnalyticsManager sharedInstance] refreshLoggerSkeleton];
+    MDNewLoggerSkeleton *eventModel = [[SDAnalyticsManager sharedInstance] loggerSkeleton];
+    eventModel.eventName = @"myOrders";
+    eventModel.eventType = kEventTypePageView;
+    [[SDAnalyticsManager sharedInstance] trackCustomEventsWithEventData:nil loggerData:eventModel];
+
+}
+
+// For load cell in table
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+
+    static NSString *reuseId = @"MDSelectOrderCell";
+    MDSelectOrderCell *cell = (MDSelectOrderCell *)[tableView dequeueReusableCellWithIdentifier:reuseId];
+    
+    if(!cell) {
+        cell = [SDSelectOrderCell createInstance];
+    }
+    
+    MDOTSSubOrderModel *otsSubOrderModel = [self.subOrdersTotalArray objectAtIndex:indexPath.row];
+    cell.otsSubOrderModel = otsSubOrderModel;
+    [cell configureCellSubViews];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    return cell;
+}
+
+for button action
+
+        [cell.submitButton addTarget:self action:@selector(didTapSubmitButton) forControlEvents:UIControlEventTouchUpInside];
+
+

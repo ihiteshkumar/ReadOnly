@@ -1,0 +1,54 @@
+//in AppDelegate.h
+-(Chore *) createChore;
+-(ChoreLog *) createChoreLog;
+-(Person *) createPerson; 
+
+//in AppDelegate.m
+-(Chore *)createChore {
+    NSManagedObjectContext *context = [self managedObjectContext];
+    
+    Chore * chore = [NSEntityDescription insertNewObjectForEntityForName:@"Chore" inManagedObjectContext:context];
+    
+    return chore;
+}
+
+
+    NSManagedObjectContext *moc = self.appDelegate.managedObjectContext;
+    NSFetchRequest *req = [[NSFetchRequest alloc] initWithEntityName:@"Chore"];
+
+
+//in VC
+@property(nonatomic, strong) AppDelegate *appDelegate;
+    self.appDelegate = [[UIApplication sharedApplication] delegate];
+
+//Add in entity.. add in database
+    Chore *ch = [self.appDelegate createChore];
+    ch.chore_name = self.inputField.text;
+    
+    [self.appDelegate saveContext];
+
+//Get from from database
+    NSManagedObjectContext *moc = self.appDelegate.managedObjectContext;
+    NSFetchRequest *req = [[NSFetchRequest alloc] initWithEntityName:@"Chore"];
+    NSError *error;    
+    NSArray *results = [moc executeFetchRequest:req error:&error];
+
+//Delete from database
+    NSManagedObjectContext * moc = self.appDelegate.managedObjectContext;
+    NSFetchRequest * req = [[NSFetchRequest alloc] initWithEntityName:@"Chore"];
+    NSError * error ;
+    
+    NSArray * results = [moc executeFetchRequest:req error:&error];
+    if(!results)
+    {
+        return;
+    }
+    
+    for(Chore * ch in results)
+    {
+        [moc deleteObject:ch];
+    }
+    [self.appDelegate saveContext];
+//For delete particular object // here "like" means is "==
+   NSPredicate *predicate = [NSPredicate predicateWithFormat:@"chore_name like%@", self.inputField.text];
+   [req setPredicate:predicate];

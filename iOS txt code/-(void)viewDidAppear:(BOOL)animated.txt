@@ -1,0 +1,45 @@
+-(void)viewDidAppear:(BOOL)animated
+{
+    double latitude = 28.38;
+    double longitude =  77.12;
+    MKPlacemark *placemark = [[MKPlacemark alloc] initWithCoordinate:CLLocationCoordinate2DMake(latitude, longitude) addressDictionary:nil];
+    MKMapItem *mapItem = [[MKMapItem alloc] initWithPlacemark:placemark];
+    [mapItem setName:@"First"];
+    [mapItem openInMapsWithLaunchOptions:nil];
+    
+    double latitude1 = 12.58;
+    double longitude1 =  77.38;
+    MKPlacemark *placemark1 = [[MKPlacemark alloc] initWithCoordinate:CLLocationCoordinate2DMake(latitude1, longitude1) addressDictionary:nil];
+    MKMapItem *mapItem1 = [[MKMapItem alloc] initWithPlacemark:placemark1];
+    [mapItem1 setName:@"Second"];
+    [mapItem1 openInMapsWithLaunchOptions:nil];
+    
+    
+    
+//    MKPlacemark *source = [[MKPlacemark alloc]initWithCoordinate:sourceCoordinate.coordinate addressDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"",@"", nil] ];
+//    MKMapItem *sourceMapItem = [[MKMapItem alloc]initWithPlacemark:source];
+//    MKPlacemark *destination = [[MKPlacemark alloc]initWithCoordinate:destinationCoordinate.coordinate addressDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"",@"", nil] ];
+//    MKMapItem *distMapItem = [[MKMapItem alloc]initWithPlacemark:destination];
+    MKDirectionsRequest *request = [[MKDirectionsRequest alloc]init];
+    [request setSource:mapItem];
+    [request setDestination:mapItem1];
+    [request setTransportType:MKDirectionsTransportTypeAutomobile];
+    MKDirections *direction = [[MKDirections alloc]initWithRequest:request];
+    [direction calculateDirectionsWithCompletionHandler:^(MKDirectionsResponse *response, NSError *error) {
+        if (!error) {
+            for (MKRoute *route in [response routes]) {
+                [self.mapViewOtl addOverlay:[route polyline] level:MKOverlayLevelAboveRoads];
+            }  
+        }  
+    }];  
+}
+
+{
+    "requestProtocol": "PROTOCOL_JSON",
+    "apiKey": "snapdeal",
+    "responseProtocol": "PROTOCOL_JSON",
+    "emailId": "aman.agarwal@snapdeal.com",
+    "password": "om290600"
+}
+//            [Apsalar eventWithArgs:@"Login", @"source", @"iosemailid", nil];
+//            [Apsalar eventWithArgs:@"Loginn", dict, nil];

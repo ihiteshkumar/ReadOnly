@@ -1,0 +1,44 @@
+Call from cell from that button
+
+In cell .h file
+@protocol SDContactCCTableViewCellDelegate<NSObject>
+
+-(void)didTapOnCustomerCareButton;
+
+@end
+
+In cell .m file
+- (IBAction)contactCustomerCareTapped:(id)sender {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didTapOnCustomerCareButton)]){
+        [self.delegate didTapOnCustomerCareButton];
+    }
+  
+//    [self.navigationController pushViewController:contactCC animated:YES];
+
+}
+
+In .m of that view Controller
+
+-(void)didTapOnCustomerCareButton
+{
+    [self navigateToCustomerCareVC];
+}
+
+#pragma mark - Navigation Methods
+
+-(void)navigateToCustomerCareVC
+{
+    SDContactCustomerCareVC *customerCareVC = [[SDContactCustomerCareVC alloc] initWithNibName:@"SDContactCustomerCareVC" bundle:nil];
+    [self.navigationController pushViewController:customerCareVC animated:YES];
+}
+
+///
+    SDContactCustomerCareVC *customerCareVC = [[SDContactCustomerCareVC alloc] initWithNibName:@"SDContactCustomerCareVC" bundle:nil];
+
+Declarea typeDef
+
+    typedef NS_ENUM(NSUInteger, SDCustomSeparatorViewType) {
+    SDLineSeparatorView,
+    SDDashedLineSeparatorView,
+    SDWithOutLineSeparatorView
+};

@@ -1,0 +1,27 @@
+#Tutorial
+Attributed text
+
+        NSMutableAttributedString *simpleTxt = [[NSMutableAttributedString alloc]initWithString:@"Ext.Delivery:" ];
+        [simpleTxt addAttribute:NSForegroundColorAttributeName value:[UIColor grayColor] range:NSMakeRange(0,simpleTxt.length)];
+        NSMutableAttributedString *deliveryDate = [[NSMutableAttributedString alloc]initWithString:self.dateInfo.expectedDeliveryDate];
+        [deliveryDate addAttribute:NSForegroundColorAttributeName value:color_for_dataLabel range:NSMakeRange(0, deliveryDate.length)];
+        [simpleTxt appendAttributedString:deliveryDate];
+
+
+
+___________________Tracking_____________________________
+
+#import "AnalyticsManager.h"
+
+//Tracking
+[[AnalyticsManager sharedInstance] trackCustomAppState:@"ios:mapnavigation" withDictionary:nil withLogType:kLogTypeOmniture];
+
+//Tracking
+[[AnalyticsManager sharedInstance] trackCustomAppState:@"ios:mapzoom" withDictionary:nil withLogType:kLogTypeOmniture];
+
+
+__________________API URL_______________________________
+po [request absoluteUrl]
+http://mobileapi.hitesh.com/service/campaign/getCampaignCategories
+
+
